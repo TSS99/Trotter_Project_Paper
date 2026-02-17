@@ -1,107 +1,121 @@
-# Trotterization notebook. Converted to a multi-file Python project
+# Circuit-Level Trotterization for Discretized 1D Schrödinger Dynamics
 
-This project is a direct translation of the logic in your notebook:
-- Build infinite well and harmonic oscillator Hamiltonians on an N=2^n grid
-- Build Gaussian initial states
-- Compute the reference dynamics via eigenstate expansion
-- Construct the Pauli exponential gadget and build the first-order product-formula Trotter step
-- Compare fidelity vs time, snapshot overlays, and final-time error vs r
-- Produce resource accounting (CNOT count, 1q rotations, depth estimate) and LaTeX tables
-- Produce the HO expectation-value plot ⟨x⟩(t)
+Author: **Tilock Sadhukahn**  
+LinkedIn: https://www.linkedin.com/in/tilock-sadhukhan/  
+License: MIT
 
-All outputs go to:
-- figures/
-- tables/
-- data/
+## What this repository contains
 
-## Setup (fresh VS Code folder)
+This repo implements a complete, reproducible pipeline for simulating **1D quantum dynamics** on an **n-qubit register** by:
 
-Create a venv:
+1. Discretizing position on a uniform grid with **N = 2^n** points and encoding the sampled wavefunction as amplitudes of $|j\rangle$.
+2. Building discretized Hamiltonians (finite difference) for:
+   - the infinite potential well
+   - the harmonic oscillator
+3. Expanding the discretized Hamiltonian in the **n-qubit Pauli basis**.
+4. Implementing real-time evolution using a **first-order (Lie) product formula** (Trotterization).
+5. Compiling each Pauli-string exponential into an explicit, readable gate block.
+6. Computing an **exact reference evolution** in the same discretized Hilbert space via eigen-decomposition.
+7. Comparing reference vs circuit evolution using fidelity and producing resource summaries (Pauli-term statistics, CNOT counts, depth proxies) plus plots.
 
+The goal is to make the accuracy vs resources tradeoffs visible at the circuit level while keeping the physics and numerics consistent end to end.
+
+## Core equations (GitHub renders these)
+
+Schrödinger evolution:
+$$
+i\hbar\,\frac{\partial}{\partial t}|\psi(t)\rangle = \hat{H}|\psi(t)\rangle,
+\qquad
+|\psi(t)\rangle = e^{-i\hat{H}t/\hbar}|\psi(0)\rangle
+$$
+
+Grid encoding with $N=2^n$:
+$$
+x_j = x_{\min} + j\,\Delta x,\quad j=0,\dots,N-1
+$$
+$$
+|\psi\rangle \approx \sum_{j=0}^{N-1} \psi(x_j)\,|j\rangle
+$$
+
+Pauli decomposition of the discretized Hamiltonian:
+$$
+H = \sum_{k=1}^{M} \alpha_k P_k,
+\qquad
+P_k \in \{I,X,Y,Z\}^{\otimes n}
+$$
+
+First-order product formula (Trotterization):
+$$
+U(t)=e^{-iHt}\approx\left(\prod_{k=1}^{M} e^{-i\alpha_k P_k\Delta t}\right)^{r},
+\qquad
+\Delta t = \frac{t}{r}
+$$
+
+Fidelity against the reference evolution:
+$$
+F(t) = \left|\langle \psi_{\text{ref}}(t)\,|\,\psi_{\text{trot}}(t)\rangle\right|^2
+$$
+
+## Project structure
+
+```text
+.
+├── run_all.py                 # Main entrypoint. Runs both systems and generates artifacts
+├── requirements.txt
+├── trotter_sim/
+│   ├── __init__.py
+│   ├── utils.py               # config dataclasses + validation + helpers
+│   ├── systems.py             # discretized Hamiltonians + initial states
+│   ├── reference.py           # eigen-expansion reference evolution (saves NPZ)
+│   ├── pauli_blocks.py        # exp(-iθP) gate block implementation + quick tests
+│   ├── trotter.py             # Pauli decomposition + step-unitary + fidelity
+│   ├── resources.py           # CNOT/depth proxies + Pauli-term stats
+│   └── plotting.py            # non-interactive plotting helpers (saves to figures/)
+├── config/
+│   └── default_config.json    # parameters for both systems
+└── scripts/                   # small helpers (optional)
+```
+
+## Run in a fresh VS Code folder
+
+### 1) Create a virtual environment
 ```bash
 python -m venv .venv
-```
-
-Activate it:
-
-Windows PowerShell:
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Windows cmd:
-```bat
-.\.venv\Scripts\activate.bat
-```
-
-macOS/Linux:
-```bash
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
 source .venv/bin/activate
 ```
 
-Install dependencies:
-
+### 2) Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-Pinned versions (for reproducibility):
-- qiskit==2.3.0
-- qiskit-aer==0.17.2
-- scipy==1.17.0
-
-## Run everything
-
+### 3) Run the full pipeline
 ```bash
 python run_all.py
 ```
 
-## About --use-aer
+The run produces (created if missing):
+- `data/` with reference trajectories saved as `ref_eigen_*.npz`
+- `figures/` with plots (densities, fidelity curves, overlays, resource plots)
+- `tables/` with text or CSV summaries when enabled by the scripts
 
-Your notebook saves statevectors using Aer (save_statevector). For large r (your well uses r=8000), building a giant circuit can get slow.
+## Configuration
 
-By default, run_all.py uses the exact same circuit construction for the Trotter step, then evaluates it as a matrix once (U_step = Operator(step).data) and propagates:
+Edit `config/default_config.json` to control:
+- `n_qubits` (implied by `N = 2^n` or specified directly depending on the config)
+- `n_steps` (Trotter steps $r$)
+- `total_time` (final time)
+- system parameters (well length, HO domain cutoff, Gaussian packet parameters)
 
-```text
-|psi_{k+1}> = U_step |psi_k>
-```
+## Notes on reproducibility
 
-This is mathematically identical to repeating the step circuit r times and gives the same snapshots and fidelities, but runs much faster.
+- Both reference and circuit evolution live in the same discretized Hilbert space. That keeps comparisons clean.
+- Each Pauli exponential $e^{-i\theta P}$ is implemented with explicit basis changes and a parity gadget.
+- The included quick tests in `pauli_blocks.py` validate the gate block against a matrix exponential for random cases.
 
-If you want the notebook-faithful Aer path anyway:
+## License
 
-```bash
-python run_all.py --use-aer
-```
-
-## What to expect in figures/
-
-You should see (names match the notebook logic):
-- well_fidelity_N32_r8000.pdf
-- ho_fidelity_N32_r40.pdf
-- well_snapshots_N32_r8000_vertical.pdf
-- ho_snapshots_N32_r40_vertical.pdf
-- well_error_vs_r_N32.pdf, acc_vs_resources_well_N32.pdf
-- ho_error_vs_r_N32.pdf, acc_vs_resources_ho_N32.pdf
-- pauli_stats_well_N32_ho_N32.pdf
-- resources_vs_r_well_N32_ho_N32.pdf
-- ho_xexp.png
-
-and the initial density plots:
-- well_initial.png
-- ho_initial.png
-
-## Config
-
-Default config:
-- config/default_config.json
-
-## File map
-
-- run_all.py . entrypoint that runs the full pipeline
-- trotter_sim/systems.py . builds Hamiltonians and initial states
-- trotter_sim/reference.py . eigenstate expansion reference simulation
-- trotter_sim/pauli_blocks.py . Pauli exponential gadget (with the Y-rotation sign fix)
-- trotter_sim/trotter.py . Pauli decomposition, Trotter step, snapshots, fidelity, error-vs-r sweep
-- trotter_sim/resources.py . resource accounting plus LaTeX tables
-- trotter_sim/plotting.py . all plots (saved to disk, no interactive windows)
+This repository is released under the MIT License. See `LICENSE`.
