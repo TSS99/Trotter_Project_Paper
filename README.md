@@ -21,46 +21,6 @@ This project is a reproducible pipeline for simulating 1D quantum dynamics on an
 
 The main entrypoint is `run_all.py`. It generates figures, tables, and reference data in one run.
 
----
-
-## Quickstart
-
-### 1. Create and activate a virtual environment
-
-```bash
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# macOS or Linux:
-source .venv/bin/activate
-```
-
-### 2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run the full pipeline
-
-```bash
-python run_all.py
-```
-
-Optional flags:
-
-- `--use-aer` runs the repeated Trotter circuit on Aer statevector snapshots. Default uses Operator(step) propagation but follows the same circuit construction.
-- `--no-pauli-tests` skips the Pauli block verification tests.
-
----
-
-## What gets produced
-
-After `python run_all.py`, outputs are written to:
-
-- `figures/` (densities, fidelities, overlays, resource plots, and $\langle x\rangle(t)$ for the harmonic oscillator)
-- `tables/` (LaTeX resource tables)
-- `data/` (reference trajectories saved as NPZ files)
 
 ---
 
@@ -224,6 +184,51 @@ U_{\mathrm{parity}}
 The parity gadget $U_{\mathrm{parity}}$ is implemented as a chain of CNOTs from all active qubits onto the last active qubit as the target, then uncomputed in reverse.
 
 ---
+
+
+## Quickstart
+
+### 1. Create and activate a virtual environment
+
+```bash
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS or Linux:
+source .venv/bin/activate
+```
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Run the full pipeline
+
+```bash
+python run_all.py
+```
+
+Optional flags:
+
+- `--use-aer` runs the repeated Trotter circuit on Aer statevector snapshots. Default uses Operator(step) propagation but follows the same circuit construction.
+- `--no-pauli-tests` skips the Pauli block verification tests.
+
+---
+
+## What gets produced
+
+After `python run_all.py`, outputs are written to:
+
+- `figures/` (densities, fidelities, overlays, resource plots, and $\langle x\rangle(t)$ for the harmonic oscillator)
+- `tables/` (LaTeX resource tables)
+- `data/` (reference trajectories saved as NPZ files)
+
+---
+
+
+
 
 ## Metrics used in the comparisons
 
