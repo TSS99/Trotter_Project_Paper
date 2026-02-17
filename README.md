@@ -4,11 +4,6 @@ Author: **Tilock Sadhukahn**
 LinkedIn: https://www.linkedin.com/in/tilock-sadhukhan/  
 License: MIT
 
-Manuscript (educational journal submission):  
-https://drive.google.com/file/d/1AZDmyoomQcOaz4iijN7HnD8eDdX99uYr/view?usp=sharing
-
-Code repository:  
-https://github.com/TSS99/Trotter_Project_Paper
 
 ---
 
