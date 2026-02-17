@@ -1,0 +1,21 @@
+{
+  "well": {
+    "n_discretize": 32,
+    "n_steps": 8000,
+    "total_time": 1.0,
+    "L": 1.0,
+    "x0": 0.5,
+    "sigma": 0.09,
+    "k0": 0.0,
+    "enforce_walls": true
+  },
+  "ho": {
+    "n_discretize": 32,
+    "n_steps": 40,
+    "total_time": 1.0,
+    "x_max": 5.0,
+    "x0": 0.0,
+    "sigma": 1.0,
+    "k0": 5.0
+  }
+}
