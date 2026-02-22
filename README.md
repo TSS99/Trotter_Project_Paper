@@ -7,7 +7,6 @@ License: MIT
 
 ---
 
-## What this repository does
 
 This project is a reproducible pipeline for simulating 1D quantum dynamics on an $n$ qubit register by:
 
