@@ -1,6 +1,6 @@
 # Circuit Level Trotterization for Discretized 1D Schrödinger Dynamics
 
-Author: **Tilock Sadhukahn**  
+Author: **Tilock Sadhukahn** 
 LinkedIn: https://www.linkedin.com/in/tilock-sadhukhan/  
 License: MIT
 
